@@ -44,7 +44,8 @@ def do_crawl(asin, is_proxy=0, no_pic=1):
 
     #time.sleep(6000)
     loading = 0
-    for i in (1,2,3,4,5):
+    ix = 0
+    while ix < 10:
         if driver.title.find('Robot Check') != -1: #Robot Check
             captcha_element = driver.find_element(By.XPATH,
                                                   '/html/body/div/div[1]/div[3]/div/div/form/div[1]/div/div/div[1]/img')
@@ -56,8 +57,11 @@ def do_crawl(asin, is_proxy=0, no_pic=1):
             #log.info('captcha: %s' % captcha_text)
             #pdb.set_trace()
             rc_input = driver.find_element_by_id('captchacharacters')
+            time.sleep(0.5)
             rc_input.send_keys(captcha_text)
+            time.sleep(0.5)
             rc_input.submit()
+            ix += 1
         elif driver.title.find('Amazon') != -1: # Good to Landing Page
             print 'Landing Page Loaded'
             loading = 1
@@ -66,9 +70,9 @@ def do_crawl(asin, is_proxy=0, no_pic=1):
             print 'Landing Page Load Failed'
             #driver.save_screenshot("codingpy.png")
             driver.quit()
-            raise RobotCheckError("Captcha Failed")
+            raise RobotCheckError("Load Landing Page Unknow Error")
 
-    if driver.title.find('Amazon') != -1: # Good to Landing Page
+    if loading ==0 and driver.title.find('Amazon') != -1: # Good to Landing Page
         print 'Landing Page Loaded'
         loading = 1
     '''

@@ -1,6 +1,6 @@
 # -*- coding:utf-8 -*-
 
-import datetime
+import time
 import traceback
 import MySQLdb as mydb
 from xlogging import log
@@ -48,6 +48,7 @@ if __name__ == '__main__':
     # do crawl
     for asin in asin_list:
         print 'Start Crawl ', asin
+        log.info('Start Crawl %s' %asin)
         try:
             q, msg = do_crawl(asin, is_proxy=0)
             if msg.find(Max_Num_Msg) > 0:
@@ -61,10 +62,13 @@ if __name__ == '__main__':
             log.critical("crawl %s failed: %s" % (asin, traceback.format_exc()))
             q = -1
 
+
         '''
         sql = SQL_INSERT_STAT % (asin, int(q), str(datetime.date.today()))
         curs.execute(sql)
         conn.commit()
         '''
         print 'Finish Crawl ', asin
+        log.info('Finish Crawl %s' % asin)
+        time.sleep(0.5)
     conn.close()

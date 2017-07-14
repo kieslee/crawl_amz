@@ -1,4 +1,5 @@
 from lib_captcha import parse_captcha
+import sys
 
-text = parse_captcha('https://images-na.ssl-images-amazon.com/captcha/rhnrlggh/Captcha_lkrokpbodh.jpg')
+text = parse_captcha(sys.argv[1])
 print text
