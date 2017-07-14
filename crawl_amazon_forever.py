@@ -8,6 +8,7 @@ import MySQLdb as mydb
 from xlogging import log
 
 from lib_crawl import do_crawl
+from crawl_exception import RobotCheckError, OperationError
 
 DB_HOST = 'localhost'
 # DB_HOST = '107.167.179.14'
@@ -67,12 +68,23 @@ if __name__ == '__main__':
                     q, msg = do_crawl(asin)
                     if msg.find(Max_Num_Msg) > 0:
                         q = 1000
+                except RobotCheckError, e:
+                    print 'Crawl %s faild: %s' % (asin, traceback.format_exc())
+                    log.critical("crawl %s failed: %s" % (asin, traceback.format_exc()))
+                    q = -1
+                except OperationError, e:
+                    print 'Crawl %s faild: %s' % (asin, traceback.format_exc())
+                    log.critical("crawl %s failed: %s" % (asin, traceback.format_exc()))
+                    q = -1
+
+                try:
                     sql = SQL_INSERT_STAT % (asin, int(q), str(datetime.date.today()))
                     curs.execute(sql)
                     conn.commit()
                     log.info('Crawl %s Succ' % asin)
                 except Exception, e:
-                    log.critical('Crawl %s Failed' % asin)
+                    log.critical("Crawl %s failed: %s" %(asin, traceback.format_exc()))
+
 
             conn.close()
             today_done = 1
