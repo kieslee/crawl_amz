@@ -3,7 +3,7 @@
 from cStringIO import StringIO
 import urllib
 import re
-from PIL import Image
+from PIL import Image, ImageDraw
 import pytesseract
 
 
@@ -18,45 +18,75 @@ def url_to_image_data(url):
     return data
 
 
-def image_data_to_tiff(data):
-    img = Image.open(StringIO(data))
+def getPixel(image, x, y, G, N):
+    L = image.getpixel((x, y))
+    if L > G:
+        L = True
+    else:
+        L = False
 
-    # img = img.convert('RGBA')
-    img = img.convert('L')
-    img = binarize_image(img)
-    return img
+    nearDots = 0
+    if L == (image.getpixel((x - 1, y - 1)) > G):
+        nearDots += 1
+    if L == (image.getpixel((x - 1, y)) > G):
+        nearDots += 1
+    if L == (image.getpixel((x - 1, y + 1)) > G):
+        nearDots += 1
+    if L == (image.getpixel((x, y - 1)) > G):
+        nearDots += 1
+    if L == (image.getpixel((x, y + 1)) > G):
+        nearDots += 1
+    if L == (image.getpixel((x + 1, y - 1)) > G):
+        nearDots += 1
+    if L == (image.getpixel((x + 1, y)) > G):
+        nearDots += 1
+    if L == (image.getpixel((x + 1, y + 1)) > G):
+        nearDots += 1
+
+    if nearDots < N:
+        return image.getpixel((x, y - 1))
+    else:
+        return None
 
 
-def binarize_image(img):
-    return img.point(initTable(), '1')
+def clearNoise(image, G, N, Z):
+    draw = ImageDraw.Draw(image)
+
+    for i in xrange(0, Z):
+        for x in xrange(1, image.size[0] - 1):
+            for y in xrange(1, image.size[1] - 1):
+                color = getPixel(image, x, y, G, N)
+                if color != None:
+                    draw.point((x, y), color)
 
 
-def initTable(threshold=140):           # 二值化函数
-    table = []
-    for i in range(256):
-        if i < threshold:
-            table.append(0)
-        else:
-            table.append(1)
+def bin_img(img):
+    pixdata = img.load()
+    for y in xrange(img.size[1]):
+        for x in xrange(img.size[0]):
+            if pixdata[x, y][0] < 90:
+                pixdata[x, y] = (0, 0, 0, 255)
 
-    return table
+    for y in xrange(img.size[1]):
+        for x in xrange(img.size[0]):
+            if pixdata[x, y][1] < 136:
+                pixdata[x, y] = (0, 0, 0, 255)
 
-
-def image_to_text(img):
-    return tesseract(img)
-
-
-def tesseract(img):
-    text = pytesseract.image_to_string(img)
-    #text = re.sub('[\W]', '', text)
-    return text
+    for y in xrange(img.size[1]):
+        for x in xrange(img.size[0]):
+            if pixdata[x, y][2] > 0:
+                pixdata[x, y] = (255, 255, 255, 255)
 
 
 def parse_captcha(url):
     data = url_to_image_data(url)
-    # img_file = open('/tmp/captcha.jpg', 'w')
-    # img_file.write(data)
-    # img_file.close()
-    img = image_data_to_tiff(data)
-    text = image_to_text(img)
+    img = Image.open(StringIO(data))
+
+    # img = img.convert("RGBA")
+    # bin_img(img)
+
+    img = img.convert("L")
+    clearNoise(img, 50, 4, 4)
+
+    text = pytesseract.image_to_string(img, config='-psm 7')
     return text
