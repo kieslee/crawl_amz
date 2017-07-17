@@ -1,6 +1,7 @@
 # -*- coding:utf-8 -*-
 
 import time
+import datetime
 import traceback
 import MySQLdb as mydb
 from xlogging import log
@@ -63,11 +64,11 @@ if __name__ == '__main__':
             q = -1
 
 
-        '''
+
         sql = SQL_INSERT_STAT % (asin, int(q), str(datetime.date.today()))
         curs.execute(sql)
         conn.commit()
-        '''
+
         print 'Finish Crawl ', asin
         log.info('Finish Crawl %s' % asin)
         time.sleep(0.5)

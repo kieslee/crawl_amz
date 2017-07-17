@@ -18,7 +18,7 @@ def do_crawl(asin, is_proxy=0, no_pic=1):
     chrome_options = webdriver.ChromeOptions()
     if is_proxy == 1:
         # set proxy
-        chrome_options.add_argument(('--proxy-server=socks5://127.0.0.1:9090'))
+        chrome_options.add_argument(('--proxy-server=socks5://127.0.0.1:6060'))
 
     '''
     chrome_options.add_argument(("--disable-plugins"))
@@ -137,6 +137,7 @@ def do_crawl(asin, is_proxy=0, no_pic=1):
         element.click()
     except Exception, e:
         print 'add item to cart failed'
+        driver.save_screenshot("codingpy.png")
         driver.quit()
         raise OperationError("add item to cart failed")
 
