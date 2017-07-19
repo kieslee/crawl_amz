@@ -6,14 +6,10 @@ import traceback
 import MySQLdb as mydb
 from xlogging import log
 
+from conf import use_proxy, DB_HOST, DB_USER, DB_PASSWD, DB_DB
+
 from lib_crawl import do_crawl
 from crawl_exception import RobotCheckError, OperationError
-
-DB_HOST = 'localhost'
-# DB_HOST = '107.167.179.14'
-DB_USER = 'amzuser'
-DB_PASSWD = '7B1YxSAhyILb'
-DB_DB = 'amazon_crawl'
 
 SQL_ALL_ASIN = """
                 SELECT asin FROM  `crawl_asin` WHERE  `id` >=1  ORDER BY  `id` ASC 
@@ -51,7 +47,7 @@ if __name__ == '__main__':
         print 'Start Crawl ', asin
         log.info('Start Crawl %s' %asin)
         try:
-            q, msg = do_crawl(asin, is_proxy=0)
+            q, msg = do_crawl(asin, is_proxy=use_proxy)
             if msg.find(Max_Num_Msg) > 0:
                 q = 1000
         except RobotCheckError, e:

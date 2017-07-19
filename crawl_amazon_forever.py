@@ -6,15 +6,11 @@ import time
 import MySQLdb as mydb
 
 from xlogging import log
+from conf import use_proxy, DB_HOST, DB_USER, DB_PASSWD, DB_DB
 
 from lib_crawl import do_crawl
 from crawl_exception import RobotCheckError, OperationError
 
-DB_HOST = 'localhost'
-# DB_HOST = '107.167.179.14'
-DB_USER = 'amzuser'
-DB_PASSWD = '7B1YxSAhyILb'
-DB_DB = 'amazon_crawl'
 
 SQL_ALL_ASIN = """
                 SELECT asin FROM  `crawl_asin` ORDER BY  `id` ASC 
@@ -33,6 +29,7 @@ log.setConfig(module_name='crawl_amazon_forever', ro_rotateby=2, ro_when='midnig
 
 if __name__ == '__main__':
     today_done = 0
+    conn = None
     while True:
         current_time = time.localtime(time.time())
         if current_time.tm_hour != START_HOUR:
@@ -65,7 +62,7 @@ if __name__ == '__main__':
             for asin in asin_list:
                 try:
                     log.info('Start Crawl %s' % asin)
-                    q, msg = do_crawl(asin)
+                    q, msg = do_crawl(asin, is_proxy=use_proxy)
                     if msg.find(Max_Num_Msg) > 0:
                         q = 1000
                 except RobotCheckError, e:
