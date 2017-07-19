@@ -2,8 +2,9 @@
 
 import time
 import traceback
-from xlogging import log
-import pdb
+#from xlogging import log
+#import pdb
+from conf import proxy_addr
 
 from lib_captcha import parse_captcha
 from crawl_exception import RobotCheckError, OperationError
@@ -18,7 +19,7 @@ def do_crawl(asin, is_proxy=0, no_pic=1):
     chrome_options = webdriver.ChromeOptions()
     if is_proxy == 1:
         # set proxy
-        chrome_options.add_argument(('--proxy-server=socks5://127.0.0.1:6060'))
+        chrome_options.add_argument(('--proxy-server=socks5://%s' % proxy_addr))
 
     '''
     chrome_options.add_argument(("--disable-plugins"))
@@ -124,6 +125,10 @@ def do_crawl(asin, is_proxy=0, no_pic=1):
     print 'click item'
     try:
         element = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH, '//*[@id="result_0"]/div/div/div/div[2]/div[1]/div[1]/a')))
+        if element.get_attribute('title'):
+            pass
+        else:
+            element = driver.find_element(By.XPATH, '//*[@id="result_0"]/div/div/div/div[2]/div[2]/div[1]/a')
         element.click()
     except Exception, e:
         print 'Search Result not clickable'
